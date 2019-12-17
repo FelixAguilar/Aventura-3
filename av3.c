@@ -10,15 +10,20 @@
 // Constants:
 #define THREADS 10
 #define NODES 10
+#define ITERATIONS 1000000
 
 // Libraries:
 #include <stdio.h>
 #include "my_lib.h"
+#include <pthread.h>
 
+void counter();
 struct my_stack *init_stack(char *file);
 
 int main(int argc, char **argv)
 {
+    pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
     if (argc != 2)
     {
         fprintf(stderr, "Error de sintaxis: ./av3 nombre archivo\n");
@@ -28,6 +33,25 @@ int main(int argc, char **argv)
 
     my_stack_write(stack, argv[1]);
     my_stack_purge(stack);
+}
+
+void counter()
+{
+    int i = ITERATIONS;
+
+    while(i>0)
+    {
+        pthread_mutex_lock();
+        int val = my_stack_pop(stack);
+        pthread_mutex_unlock();
+
+        pthread_mutex_lock();
+        val++;
+        my_stack_push(stack,val);
+        i--;
+        pthread_mutex_unlock();
+    }
+    pthread_exit();
 }
 
 struct my_stack *init_stack(char *file)
