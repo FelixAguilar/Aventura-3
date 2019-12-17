@@ -17,41 +17,50 @@
 #include "my_lib.h"
 #include <pthread.h>
 
-void counter();
+void *counter();
 struct my_stack *init_stack(char *file);
+
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+static struct my_stack *stack;
 
 int main(int argc, char **argv)
 {
-    pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
     if (argc != 2)
     {
         fprintf(stderr, "Error de sintaxis: ./av3 nombre archivo\n");
         return 1;
     }
-    struct my_stack *stack = init_stack(argv[1]);
+    stack = init_stack(argv[1]);
+    pthread_t thread[THREADS];
+    for (int i = 0; i < THREADS; i++)
+    {
+        pthread_create(&thread[i], NULL, counter, NULL);
+    }
+    for (int i = 0; i < THREADS; i++)
+    {
+        pthread_join(thread[i], NULL);
+    }
 
     my_stack_write(stack, argv[1]);
-    my_stack_purge(stack);
+    //my_stack_purge(stack);
 }
 
-void counter()
+void *counter()
 {
-    int i = ITERATIONS;
-
-    while(i>0)
+    int i = 0;
+    while (i < ITERATIONS)
     {
-        pthread_mutex_lock();
-        int val = my_stack_pop(stack);
-        pthread_mutex_unlock();
+        pthread_mutex_lock(&mutex);
+        int *val = my_stack_pop(stack);
+        pthread_mutex_unlock(&mutex);
 
-        pthread_mutex_lock();
-        val++;
-        my_stack_push(stack,val);
-        i--;
-        pthread_mutex_unlock();
+        pthread_mutex_lock(&mutex);
+        *val = *val + 1;
+        my_stack_push(stack, val);
+        i++;
+        pthread_mutex_unlock(&mutex);
     }
-    pthread_exit();
+    pthread_exit(0);
 }
 
 struct my_stack *init_stack(char *file)
