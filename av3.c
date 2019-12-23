@@ -7,9 +7,11 @@
 * Date:    03/01/2020
 */
 
+//#define PRINT
+
 // Constants:
 #define THREADS 10
-#define NODES 10
+#define NODES  10
 #define ITERATIONS 1000000
 
 // Libraries:
@@ -30,11 +32,18 @@ int main(int argc, char **argv)
         fprintf(stderr, "Error de sintaxis: ./av3 nombre archivo\n");
         return 1;
     }
+
+    printf("Threads: %d, Iterations: %d\n", THREADS, ITERATIONS);
+
     stack = init_stack(argv[1]);
     pthread_t thread[THREADS];
+
     for (int i = 0; i < THREADS; i++)
     {
-        pthread_create(&thread[i], NULL, counter, NULL);
+        pthread_create(&thread[i],NULL, counter, NULL);
+#ifdef  PRINT
+        printf("El hilo %ld creado\n", thread[i]);
+#endif
     }
     for (int i = 0; i < THREADS; i++)
     {
@@ -51,10 +60,16 @@ void *counter()
     while (i < ITERATIONS)
     {
         pthread_mutex_lock(&mutex);
+#ifdef  PRINT
+        printf("Soy el hilo %ld ejecutando pop\n", pthread_self());
+#endif
         int *val = my_stack_pop(stack);
         pthread_mutex_unlock(&mutex);
 
         pthread_mutex_lock(&mutex);
+#ifdef  PRINT
+        printf("Soy el hilo %ld ejecutando push\n", pthread_self());
+#endif
         *val = *val + 1;
         my_stack_push(stack, val);
         i++;
@@ -67,9 +82,10 @@ struct my_stack *init_stack(char *file)
 {
     struct my_stack *stack;
     stack = my_stack_read(file);
-
     if (stack)
     {
+            printf("stack->size: %d\ninitial stack length: %d\n", stack->size, my_stack_len(stack));
+
         if (my_stack_len(stack) != NODES)
         {
             if (my_stack_len(stack) < NODES)
@@ -93,6 +109,9 @@ struct my_stack *init_stack(char *file)
     else
     {
         stack = my_stack_init(sizeof(int));
+
+            printf("stack->size: %d\ninitial stack length: %d\n", stack->size, my_stack_len(stack));
+
         while (my_stack_len(stack) != NODES)
         {
             int *data = malloc(sizeof(int));
@@ -100,5 +119,7 @@ struct my_stack *init_stack(char *file)
             my_stack_push(stack, data);
         }
     }
+
+    printf("final stack length: %d\n", my_stack_len(stack));
     return stack;
 }
