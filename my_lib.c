@@ -368,10 +368,13 @@ int my_stack_write(struct my_stack *stack, char *filename)
 
     // Writes the data size inside the file.
     write(fd, &stack->size, sizeof(int));
+    int bytes = 0;
 
-    // Starts the auxiliary function to write the nodes.
-    int bytes = aux_my_stack_write(stack->first, fd, stack->size);
-
+    if (stack->first)
+    {
+        // Starts the auxiliary function to write the nodes.
+        bytes = aux_my_stack_write(stack->first, fd, stack->size);
+    }
     // Closes the file and returns the number of nodes written inside the file.
     close(fd);
     if (bytes == -1)
