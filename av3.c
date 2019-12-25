@@ -27,7 +27,7 @@
 void *counter();
 struct my_stack *init_stack(char *file);
 
-// Alocates memory for the stack and semafore.
+// Allocates memory for the stack and semaphore.
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static struct my_stack *stack;
 
@@ -40,7 +40,7 @@ static struct my_stack *stack;
 *  argv: char array of the arguments, the name of the executed file is stored 
 *        in position 0.
 *
-*  returns: success if execute correctly, else return failure.
+*  returns: success if executed correctly, else return failure.
 */
 int main(int argc, char **argv)
 {
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     // Prints basic information.
     printf("Threads: %d, Iterations: %d\n", THREADS, ITERATIONS);
 
-    // Creates the stack and an array for the threads id.
+    // Creates the stack and an array for the threads's ids.
     stack = init_stack(argv[1]);
     pthread_t thread[THREADS];
 
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
     {
         pthread_join(thread[i], NULL);
     }
-    // Save the stack into the file and purges it from memory.
+    // Saves the stack into the file and purges it from memory.
     int p = my_stack_write(stack, argv[1]);
     printf("Writen elements form stack to file: %d\n", p);
     p = my_stack_purge(stack);
@@ -81,17 +81,17 @@ int main(int argc, char **argv)
 * ------------------
 * This function is executed by the threads, this will obtain a value from the 
 * stack, add one to it and then store it in the stack again. Before access into
-* the stack checks if mutex allows it, if not then wait until it can again.
+* the stack, checks if mutex allows it, if not then wait until it can again.
 *
 *  returns: void.
 */
 void *counter()
 {
-    // Loops until executed all operations with the thread.
+    // Loops until all operations with the thread have been executed.
     int i = 0;
     while (i < ITERATIONS)
     {
-        // If mutex allows, read value from the stack.
+        // If mutex allows it, read value from the stack.
         pthread_mutex_lock(&mutex);
 #ifdef PRINT
         printf("Soy el hilo %ld ejecutando pop\n", pthread_self());
@@ -99,7 +99,7 @@ void *counter()
         int *val = my_stack_pop(stack);
         pthread_mutex_unlock(&mutex);
 
-        // If mutex allows, adds value to the stack.
+        // If mutex allows it, adds value to the stack.
         pthread_mutex_lock(&mutex);
 #ifdef PRINT
         printf("Soy el hilo %ld ejecutando push\n", pthread_self());
@@ -109,16 +109,16 @@ void *counter()
         i++;
         pthread_mutex_unlock(&mutex);
     }
-    // After all operations executed then exit thread.
+    // Exit thread after all operations have been executed.
     pthread_exit(0);
 }
 
 /*
 * Function: init_stack:
 * ---------------------
-* Checks if the stack exists and if it does configures it to the constants 
-* defined. Else creates a new stack with the configuration created with the 
-* constants.
+* Checks if the stack exists and if it does configures it according 
+* to the defined constants. Else creates a new stack with the configuration 
+* created with the constants.
 *
 *  file: Pointer to the name of the file.
 *
@@ -130,15 +130,15 @@ struct my_stack *init_stack(char *file)
     struct my_stack *stack;
     stack = my_stack_read(file);
 
-    // If the stack exist, then configure it to the execution.
+    // If the stack exists, then configure it for the execution.
     if (stack)
     {
         printf("initial stack length: %d\n", my_stack_len(stack));
 
-        // If the stack is diferent than needed corrects it.
+        // If the stack is diferent than needed, corrects it.
         if (my_stack_len(stack) != NODES)
         {
-            // If shorter then adds nodes.
+            // If shorter, adds nodes.
             if (my_stack_len(stack) < NODES)
             {
                 while (my_stack_len(stack) != NODES)
@@ -148,7 +148,7 @@ struct my_stack *init_stack(char *file)
                     my_stack_push(stack, data);
                 }
             }
-            // If longer pops nodes.
+            // If longer, pops nodes.
             else
             {
                 while (my_stack_len(stack) != NODES)
@@ -158,7 +158,7 @@ struct my_stack *init_stack(char *file)
             }
         }
     }
-    // If not creates a new stack wiht the execution configuration.
+    // If not creates a new stack with the execution configuration.
     else
     {
         stack = my_stack_init(sizeof(int));
